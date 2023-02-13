@@ -1,0 +1,105 @@
+local raw_loadfile = ...
+_G._OSVERSION = "SwiftOS Hopper"
+local title = "SwiftOS"
+local component = component
+local computer = computer
+local unicode = unicode
+local function centrize(wi, screenWidth)
+	return math.floor(screenWidth / 2 - wi / 2)
+end
+local runlevel, shutdown = "S", computer.shutdown
+computer.runlevel = function() return runlevel end
+computer.shutdown = function(reboot)
+  runlevel = reboot and 6 or 0
+  if os.sleep then
+    computer.pushSignal("shutdown")
+    os.sleep(0.1)
+  end
+  shutdown(reboot)
+end
+local screen = component.list('screen', true)()
+for address in component.list('screen', true) do
+  if #component.invoke(address, 'getKeyboards') > 0 then
+    screen = address
+    break
+  end
+end
+_G.boot_screen = screen
+local gpu = component.list("gpu", true)()
+local w, h = 160, 50
+if gpu and screen then
+  component.invoke(gpu, "bind", screen)
+  w, h = component.invoke(gpu, "maxResolution")
+  component.invoke(gpu, "setResolution", w, h)
+  component.invoke(gpu, "setBackground", 0x3f096d)
+  component.invoke(gpu, "setForeground", 0xFFFFFF)
+  component.invoke(gpu, "fill", 1, 1, w, h, " ")
+  component.invoke(gpu, "set", centrize(#title, w), h/2, title)
+  component.invoke(gpu, "setForeground", 0x000000)
+  component.invoke(gpu, "set", w/2-25,h/2+2,string.rep("─", 50))
+end
+local y = 1
+local function status(msg)
+  if gpu and screen then
+  	component.invoke(gpu, "setForeground", 0x00ff00)
+  	if y < 20 then
+  		loa = string.rep("─", math.floor(y*2.5))
+  	else
+  		loa = string.rep("─", 50)
+  	end
+  	component.invoke(gpu, "set", w/2-25,h/2+2,loa)
+  	component.invoke(gpu, "fill",1,h,w,h," ")
+  	component.invoke(gpu, "set",1,h,"Status: "..msg)
+  	y = y + 1
+  end
+end
+status("Booting " .. _OSVERSION .. "...")
+local loadfile = function(file)
+  status("> " .. file)
+  return raw_loadfile(file)
+end
+ 
+local function dofile(file)
+  local program, reason = loadfile(file)
+  if program then
+    local result = table.pack(pcall(program))
+    if result[1] then
+      return table.unpack(result, 2, result.n)
+    else
+      error(result[2])
+    end
+  else
+    error(reason)
+  end
+end
+status("Инициализация системы...")
+local package = dofile("/system/systemDATA/Library/package.lua")
+do
+  _G.component = nil
+  _G.computer = nil
+  _G.process = nil
+  _G.unicode = nil
+  _G.package = package
+  package.loaded.component = component
+  package.loaded.computer = computer
+  package.loaded.unicode = unicode
+  package.loaded.buffer = dofile("/system/systemDATA/Library/buffer.lua")
+  package.loaded.filesystem = dofile("/system/systemDATA/Library/filesystem.lua")
+  _G.io = loadfile("/system/systemDATA/Library/io.lua")()
+end
+status("Initializing file system...")
+require("filesystem").mount(computer.getBootAddress(), "/")
+package.preload={}
+status("Загрузка драйверов...")
+local function rom_invoke(method, ...)
+  return component.invoke(computer.getBootAddress(), method, ...)
+end
+  dofile('/system/systemDATA/drivers')
+status("Initializing components...")
+for c, t in component.list() do
+  computer.pushSignal("component_added", c, t)
+end
+status("Initializing system...")
+computer.pushSignal("init") -- so libs know components are initialized.
+require("event").pull(1, "init") -- Allow init processing.
+_G.runlevel = 1
