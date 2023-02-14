@@ -5,6 +5,7 @@ local gpu = require('component').gpu
 local term = require('term')
 local gpu = require('component').gpu
 local string = require('string')
+local computer = require("computer")
 
 gpu.setBackground(0x3f096d)
 gpu.setForeground(0x000000)
@@ -33,8 +34,8 @@ shell.setAlias("cp", "cp -i")
 
 os.setenv('VER', 'Skidblandir')
 os.setenv('NAME', 'SwiftOS')
-os.setenv("date_release", "January 13, 2023")
-os.setenv("update", "Lyoko")
+os.setenv("date_release", "January 14, 2023 Happy Valentin's day!")
+os.setenv("update", "Cortex")
 
 local GUI = require("GUI")
 
@@ -47,3 +48,4 @@ local result, reason = loadfile('/system/systemDATA/auth/auth.lua')
 else
  GUI.alert("Error: " .. reason)
  end
+ 

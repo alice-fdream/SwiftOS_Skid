@@ -122,7 +122,7 @@ local GUI = {
 		inputBack = 0x186d2c,
 		placeholderText = 0xB3B3B3,
 		inputText = 0xFFFFFF,
-		backgroundDesktop = 0x114f20
+		backgroundDesktop = 0xa400db
 	}
 }
 
@@ -962,9 +962,9 @@ function GUI.alert(...)
 	local oldPixels = buffer.copy(application.x, application.y, application.width, application.height)
 
 	local x, y = math.floor(bufferWidth / 2 - width / 2), offset + 1
-	application:addChild(GUI.panel(1, 1, application.width, application.height, 0x275bb0))
+	application:addChild(GUI.panel(1, 1, application.width, application.height, 0x410057))
 	application:addChild(GUI.image(x, y, sign))
-	application:addChild(GUI.textBox(x + image.getWidth(sign) + 2, y, textWidth, #lines, 0x275bb0, 0xE1E1E1, lines, 1, 0, 0)).eventHandler = nil
+	application:addChild(GUI.textBox(x + image.getWidth(sign) + 2, y, textWidth, #lines, 0x410057, 0xE1E1E1, lines, 1, 0, 0)).eventHandler = nil
 	local buttonWidth = 10
 	local button = application:addChild(GUI.roundedButton(x + image.getWidth(sign) + textWidth - buttonWidth + 2, application.height - offset, buttonWidth, 1, 0xFFFFFF, 0x000000, 0xFFFFFF, 0x000000, "OK"))
 	
@@ -4300,13 +4300,13 @@ function GUI.app(x, y, w, h, name)
 
 	local window = GUI.container(x, y, w, h)
 
-	local panel = GUI.roundedButton (1, 1, w, h, GUI.SystemColor.background, GUI.SystemColor.background, GUI.SystemColor.background, GUI.SystemColor.background, "")
+	local panel = GUI.roundedButton (1, 1, w, h, 0x410057, 0x410057, 0x410057, 0x410057, "")
 	window:addChild(panel)
 	
-	local top = GUI.panel(1,1, w, 1, GUI.SystemColor.inputBack)
+	local top = GUI.panel(1,1, w, 1, 0x4a00b3)
 	window:addChild(top)
 	
-	local close_button = GUI.button(1,1,1,1, GUI.SystemColor.inputBack, 0x4f1117, GUI.SystemColor.inputBack, 0x4f1117, "X")
+	local close_button = GUI.button(1,1,1,1, 0x4a00b3, 0xFFFFFF, 0x4a00b3, 0xFFFFFF, "X")
 	window:addChild(close_button).onTouch = function()
 		window:remove()
 		window:draw()
